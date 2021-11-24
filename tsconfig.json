@@ -1,6 +1,9 @@
 {
     "compilerOptions": {
-      "lib": ["es2017"],
+      "lib": [
+        "es2017",
+        "DOM"
+      ],
       "module": "commonjs",
       "noImplicitReturns": true,    
       "esModuleInterop": true,
@@ -9,11 +12,16 @@
       "target": "es5",
       "declaration": true,
       "types": [
-        "mocha", "node"
+        "mocha", "node", "chai"
       ]
     },
     "compileOnSave": true,
     "include": [
-      "src"
+    "src/**/*.ts"
+    ],
+    "exclude": [
+      "node_modules/",
+      "**/*.spec.ts"
     ]
+    
   }

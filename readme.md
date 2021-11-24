@@ -1,21 +1,30 @@
-# TypeScript Package Starter
+# Apollo service to Quasar application
 
-TypeScript boilerplate for NPM or Github Packages
+Helper for use Apollo (GRAPHQL) in quasar applications.
 
-## Build project
+Using for example in boot file:
 
-```sh
-npm run build
 ```
+import Vue from 'vue'
+import VueApollo from 'vue-apollo'
+import { createApolloClient } from 'src/services/apollo/create-apollo-client'
+import { hbp } from "src/boot/nhost"
 
-## Test pacakge
+// Install vue-apollo plugin
+Vue.use(VueApollo)
 
-```sh
-npm test
-```
+export default ({ app, router, store, urlPath, redirect }) => {
+  // create an 'apollo client' instance
+  const { apolloClient, wsClient } = createApolloClient({ app, router, store, urlPath, redirect, hbp })
 
-## Deploy package
+  apolloClient.wsClient = wsClient
 
-```sh
-npm run deploy
+  // create an 'apollo provider' instance
+  const apolloProvider = new VueApollo({ defaultClient: apolloClient })
+
+  // attach created 'apollo provider' instance to the app
+  app.apolloProvider = apolloProvider
+  store.$apolloClient = apolloClient
+}
+
 ```
