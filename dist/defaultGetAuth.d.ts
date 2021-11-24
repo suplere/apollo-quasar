@@ -1,1 +1,1 @@
-export declare function defaultGetAuth(tokenName: any): void;
+export declare function defaultGetAuth(tokenName: any): string;

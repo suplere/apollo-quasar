@@ -1,8 +1,9 @@
 {
     "compilerOptions": {
       "lib": [
-        "es2017",
-        "DOM"
+        "esnext.asynciterable",
+        "es2016",
+        "dom"
       ],
       "module": "commonjs",
       "noImplicitReturns": true,    
