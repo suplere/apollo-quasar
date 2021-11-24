@@ -21,17 +21,17 @@ var apollo_cache_inmemory_1 = require("apollo-cache-inmemory");
 var get_apollo_client_config_1 = __importDefault(require("./get-apollo-client-config"));
 var apollo_client_hooks_1 = require("./apollo-client-hooks");
 // function that returns an 'apollo client' instance
-function createApolloClient(_a) {
-    var app = _a.app, router = _a.router, store = _a.store, urlPath = _a.urlPath, redirect = _a.redirect, _b = _a.ssrContext, ssrContext = _b === void 0 ? null : _b, hbp = _a.hbp;
-    var cfg = (0, get_apollo_client_config_1.default)({
-        app: app,
-        router: router,
-        store: store,
-        urlPath: urlPath,
-        ssrContext: ssrContext,
-        redirect: redirect,
-        hbp: hbp
-    });
+// context {
+//   app,
+//   router,
+//   store,
+//   urlPath,
+//   redirect,
+//   ssrContext = null,
+//   hbp
+// }
+function createApolloClient(context) {
+    var cfg = (0, get_apollo_client_config_1.default)(context);
     // create apollo client link
     var link = new apollo_link_http_1.HttpLink(cfg.httpLinkConfig);
     // create apollo client cache
@@ -39,25 +39,11 @@ function createApolloClient(_a) {
     // object that will be used to instantiate apollo client
     var apolloClientConfigObj = __assign({ link: link, cache: cache }, cfg.additionalConfig);
     // run hook before creating apollo client instance
-    (0, apollo_client_hooks_1.apolloClientBeforeCreate)({
-        apolloClientConfigObj: apolloClientConfigObj,
-        app: app,
-        router: router,
-        store: store,
-        urlPath: urlPath,
-        redirect: redirect,
-    });
+    (0, apollo_client_hooks_1.apolloClientBeforeCreate)(__assign({ apolloClientConfigObj: apolloClientConfigObj }, context));
     // create an `apollo client` instance
     var apolloClient = new apollo_client_1.ApolloClient(apolloClientConfigObj);
     // run hook after creating apollo client instance
-    (0, apollo_client_hooks_1.apolloClientAfterCreate)({
-        apolloClient: apolloClient,
-        app: app,
-        router: router,
-        store: store,
-        urlPath: urlPath,
-        redirect: redirect,
-    });
+    (0, apollo_client_hooks_1.apolloClientAfterCreate)(__assign({ apolloClient: apolloClient }, context));
     // return `apollo client` instance
     return apolloClient;
 }

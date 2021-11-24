@@ -8,24 +8,17 @@ import {
 } from "./apollo-client-hooks";
 
 // function that returns an 'apollo client' instance
-export function createApolloClient({
-  app,
-  router,
-  store,
-  urlPath,
-  redirect,
-  ssrContext = null,
-  hbp
-}) {
-  const cfg = getApolloClientConfig({
-    app,
-    router,
-    store,
-    urlPath,
-    ssrContext,
-    redirect,
-    hbp
-  });
+// context {
+//   app,
+//   router,
+//   store,
+//   urlPath,
+//   redirect,
+//   ssrContext = null,
+//   hbp
+// }
+export function createApolloClient(context) {
+  const cfg = getApolloClientConfig(context);
 
   // create apollo client link
   const link = new HttpLink(cfg.httpLinkConfig);
@@ -39,11 +32,7 @@ export function createApolloClient({
   // run hook before creating apollo client instance
   apolloClientBeforeCreate({
     apolloClientConfigObj,
-    app,
-    router,
-    store,
-    urlPath,
-    redirect,
+    ...context
   });
 
   // create an `apollo client` instance
@@ -52,11 +41,7 @@ export function createApolloClient({
   // run hook after creating apollo client instance
   apolloClientAfterCreate({
     apolloClient,
-    app,
-    router,
-    store,
-    urlPath,
-    redirect,
+    ...context,
   });
 
   // return `apollo client` instance

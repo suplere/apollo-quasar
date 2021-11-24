@@ -6,7 +6,7 @@ function defaultGetAuth(hbp) {
 }
 
 export default function (
-  context /* { app, router, store, ssrContext, urlPath, redirect } */
+  context /* context contain for example { app, router, store, ssrContext, urlPath, redirect } from boot file */
 ) {
   return {
     default: {

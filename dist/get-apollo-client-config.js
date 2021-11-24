@@ -11,21 +11,12 @@ var quasarMode = process.env.MODE;
 // client (web browser for example)
 // https://quasar.dev/quasar-cli/cli-documentation/handling-process-env#Values-supplied-by-Quasar-CLI
 var onServer = process.env.SERVER;
-function default_1(_a) {
-    var app = _a.app, router = _a.router, store = _a.store, ssrContext = _a.ssrContext, urlPath = _a.urlPath, redirect = _a.redirect, hbp = _a.hbp;
+function default_1(context) {
     // get raw configuration provided by the app
-    var rawConfig = (0, apollo_client_config_1.default)({
-        app: app,
-        router: router,
-        store: store,
-        ssrContext: ssrContext,
-        urlPath: urlPath,
-        redirect: redirect,
-        hbp: hbp
-    });
+    var rawConfig = (0, apollo_client_config_1.default)(context);
     // merge provided configs.
     // specific mode configs will be merged to the default config
-    return (0, webpack_merge_1.default)(rawConfig.default, rawConfig[quasarMode], process.env.DEV ? rawConfig.dev : {}, process.env.PROD ? rawConfig.prod : {}, quasarMode === "ssr" && onServer ? rawConfig.ssrOnServer : {}, quasarMode === "ssr" && !onServer ? rawConfig.ssrOnClient : {});
+    return (0, webpack_merge_1.default)(rawConfig.default, rawConfig[quasarMode] ? rawConfig[quasarMode] : {}, process.env.DEV ? rawConfig.dev : {}, process.env.PROD ? rawConfig.prod : {}, quasarMode === "ssr" && onServer ? rawConfig.ssrOnServer : {}, quasarMode === "ssr" && !onServer ? rawConfig.ssrOnClient : {});
 }
 exports.default = default_1;
 //# sourceMappingURL=get-apollo-client-config.js.map
