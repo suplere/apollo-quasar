@@ -1,5 +1,5 @@
 declare function defaultGetAuth(hbp: any): string;
-export default function (store: any): {
+export default function (context: any): {
     default: {
         clientId: string;
         persisting: boolean;

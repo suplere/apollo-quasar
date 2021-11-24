@@ -16,6 +16,7 @@ export default function ({
   ssrContext,
   urlPath,
   redirect,
+  hbp
 }) {
   // get raw configuration provided by the app
   const rawConfig = config({
@@ -25,6 +26,7 @@ export default function ({
     ssrContext,
     urlPath,
     redirect,
+    hbp
   });
 
   // merge provided configs.

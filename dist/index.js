@@ -22,7 +22,7 @@ var get_apollo_client_config_1 = __importDefault(require("./get-apollo-client-co
 var apollo_client_hooks_1 = require("./apollo-client-hooks");
 // function that returns an 'apollo client' instance
 function createApolloClient(_a) {
-    var app = _a.app, router = _a.router, store = _a.store, urlPath = _a.urlPath, redirect = _a.redirect, ssrContext = _a.ssrContext;
+    var app = _a.app, router = _a.router, store = _a.store, urlPath = _a.urlPath, redirect = _a.redirect, _b = _a.ssrContext, ssrContext = _b === void 0 ? null : _b, hbp = _a.hbp;
     var cfg = (0, get_apollo_client_config_1.default)({
         app: app,
         router: router,
@@ -30,6 +30,7 @@ function createApolloClient(_a) {
         urlPath: urlPath,
         ssrContext: ssrContext,
         redirect: redirect,
+        hbp: hbp
     });
     // create apollo client link
     var link = new apollo_link_http_1.HttpLink(cfg.httpLinkConfig);

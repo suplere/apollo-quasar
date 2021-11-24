@@ -14,7 +14,8 @@ export function createApolloClient({
   store,
   urlPath,
   redirect,
-  ssrContext,
+  ssrContext = null,
+  hbp
 }) {
   const cfg = getApolloClientConfig({
     app,
@@ -23,6 +24,7 @@ export function createApolloClient({
     urlPath,
     ssrContext,
     redirect,
+    hbp
   });
 
   // create apollo client link

@@ -6,7 +6,7 @@ function defaultGetAuth(hbp) {
 }
 
 export default function (
-  store /* { app, router, store, ssrContext, urlPath, redirect } */
+  context /* { app, router, store, ssrContext, urlPath, redirect } */
 ) {
   return {
     default: {

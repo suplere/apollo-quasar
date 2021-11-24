@@ -6,7 +6,7 @@ function defaultGetAuth(hbp) {
     // console.log(token)
     return token ? "Bearer " + token : "";
 }
-function default_1(store /* { app, router, store, ssrContext, urlPath, redirect } */) {
+function default_1(context /* { app, router, store, ssrContext, urlPath, redirect } */) {
     return {
         default: {
             // Client ID if using multiple Clients

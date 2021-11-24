@@ -12,7 +12,7 @@ var quasarMode = process.env.MODE;
 // https://quasar.dev/quasar-cli/cli-documentation/handling-process-env#Values-supplied-by-Quasar-CLI
 var onServer = process.env.SERVER;
 function default_1(_a) {
-    var app = _a.app, router = _a.router, store = _a.store, ssrContext = _a.ssrContext, urlPath = _a.urlPath, redirect = _a.redirect;
+    var app = _a.app, router = _a.router, store = _a.store, ssrContext = _a.ssrContext, urlPath = _a.urlPath, redirect = _a.redirect, hbp = _a.hbp;
     // get raw configuration provided by the app
     var rawConfig = (0, apollo_client_config_1.default)({
         app: app,
@@ -21,6 +21,7 @@ function default_1(_a) {
         ssrContext: ssrContext,
         urlPath: urlPath,
         redirect: redirect,
+        hbp: hbp
     });
     // merge provided configs.
     // specific mode configs will be merged to the default config
