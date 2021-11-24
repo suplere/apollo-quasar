@@ -1,5 +1,5 @@
 import { ApolloClient } from "apollo-client";
-export declare function createApolloClient(context: any): {
+export declare function createApolloClient(context: any, config: any): {
     apolloClient: ApolloClient<unknown>;
     wsClient: any;
     stateLink: any;

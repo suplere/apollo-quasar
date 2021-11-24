@@ -28,7 +28,7 @@ import { OperationDefinitionNode } from "graphql";
 //   ssrContext = null,
 //   hbp
 // }
-export function createApolloClient(context) {
+export function createApolloClient(context, config) {
   const { app, router, store, urlPath, redirect, hbp } = context;
   const cfg = getApolloClientConfig({
     app,
@@ -41,15 +41,18 @@ export function createApolloClient(context) {
 
   let { link, persisting } = cfg;
 
+  const httpEndpoint = config.httpEndpoint || cfg.httpEndpoint;
+  const wsEndpoint = config.wsEndpoint || cfg.wsEndpoint || null;
+
   let wsClient, authLink, stateLink;
-  const disableHttp = cfg.websocketsOnly && cfg.wsEndpoint;
+  const disableHttp = cfg.websocketsOnly && wsEndpoint;
 
   // Apollo cache
   const cache = cfg.cache ? cfg.cache : new InMemoryCache(cfg.cacheConfig);
 
   if (!disableHttp) {
     const httpLink = createUploadLink({
-      uri: cfg.httpEndpoint,
+      uri: httpEndpoint,
       ...cfg.httpLinkConfig,
     });
 
@@ -99,8 +102,8 @@ export function createApolloClient(context) {
     }
 
     // Web socket
-    if (cfg.wsEndpoint) {
-      wsClient = new SubscriptionClient(cfg.wsEndpoint, {
+    if (wsEndpoint) {
+      wsClient = new SubscriptionClient(wsEndpoint, {
         reconnect: true,
         connectionParams: () => {
           const authorization = cfg.getAuth(hbp);

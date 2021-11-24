@@ -38,7 +38,7 @@ var apollo_client_hooks_1 = require("./apollo-client-hooks");
 //   ssrContext = null,
 //   hbp
 // }
-function createApolloClient(context) {
+function createApolloClient(context, config) {
     var app = context.app, router = context.router, store = context.store, urlPath = context.urlPath, redirect = context.redirect, hbp = context.hbp;
     var cfg = (0, get_apollo_client_config_1.default)({
         app: app,
@@ -49,12 +49,14 @@ function createApolloClient(context) {
         hbp: hbp,
     });
     var link = cfg.link, persisting = cfg.persisting;
+    var httpEndpoint = config.httpEndpoint || cfg.httpEndpoint;
+    var wsEndpoint = config.wsEndpoint || cfg.wsEndpoint || null;
     var wsClient, authLink, stateLink;
-    var disableHttp = cfg.websocketsOnly && cfg.wsEndpoint;
+    var disableHttp = cfg.websocketsOnly && wsEndpoint;
     // Apollo cache
     var cache = cfg.cache ? cfg.cache : new apollo_cache_inmemory_1.InMemoryCache(cfg.cacheConfig);
     if (!disableHttp) {
-        var httpLink = (0, apollo_upload_client_1.createUploadLink)(__assign({ uri: cfg.httpEndpoint }, cfg.httpLinkConfig));
+        var httpLink = (0, apollo_upload_client_1.createUploadLink)(__assign({ uri: httpEndpoint }, cfg.httpLinkConfig));
         if (!link) {
             link = httpLink;
         }
@@ -95,8 +97,8 @@ function createApolloClient(context) {
             }
         }
         // Web socket
-        if (cfg.wsEndpoint) {
-            wsClient = new subscriptions_transport_ws_1.SubscriptionClient(cfg.wsEndpoint, {
+        if (wsEndpoint) {
+            wsClient = new subscriptions_transport_ws_1.SubscriptionClient(wsEndpoint, {
                 reconnect: true,
                 connectionParams: function () {
                     var authorization = cfg.getAuth(hbp);
