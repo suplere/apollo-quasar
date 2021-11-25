@@ -1,5 +1,6 @@
 import { ApolloClient } from "apollo-client";
-export declare function createApolloClient(context: any, config: any): {
+import { ApolloConfig } from "./types";
+export declare function createApolloClient(config: ApolloConfig, hbpInstance?: any): {
     apolloClient: ApolloClient<unknown>;
     wsClient: any;
     stateLink: any;

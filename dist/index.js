@@ -26,47 +26,91 @@ var apollo_utilities_1 = require("apollo-utilities");
 var apollo_link_persisted_queries_1 = require("apollo-link-persisted-queries");
 var apollo_link_context_1 = require("apollo-link-context");
 var apollo_link_state_1 = require("apollo-link-state");
-var get_apollo_client_config_1 = __importDefault(require("./get-apollo-client-config"));
-var apollo_client_hooks_1 = require("./apollo-client-hooks");
-// function that returns an 'apollo client' instance
-// context {
-//   app,
-//   router,
-//   store,
-//   urlPath,
-//   redirect,
-//   ssrContext = null,
-//   hbp
-// }
-function createApolloClient(context, config) {
-    var app = context.app, router = context.router, store = context.store, urlPath = context.urlPath, redirect = context.redirect, hbp = context.hbp;
-    var cfg = (0, get_apollo_client_config_1.default)({
-        app: app,
-        router: router,
-        store: store,
-        urlPath: urlPath,
-        redirect: redirect,
-        hbp: hbp,
-    });
-    var link = cfg.link, persisting = cfg.persisting;
-    var httpEndpoint = config.httpEndpoint || cfg.httpEndpoint;
-    var wsEndpoint = config.wsEndpoint || cfg.wsEndpoint || null;
-    var wsClient, authLink, stateLink;
-    var disableHttp = cfg.websocketsOnly && wsEndpoint;
-    // Apollo cache
-    var cache = cfg.cache ? cfg.cache : new apollo_cache_inmemory_1.InMemoryCache(cfg.cacheConfig);
+function defaultGetAuth(tokenName) {
+    if (typeof window !== "undefined") {
+        // get the authentication token from local storage if it exists
+        var token = window.localStorage.getItem(tokenName);
+        // return the headers to the context so httpLink can read them
+        return token ? "Bearer " + token : "";
+        // return true
+    }
+    return "";
+}
+function createApolloClient(config, hbpInstance) {
+    if (hbpInstance === void 0) { hbpInstance = null; }
+    // Client ID if using multiple Clients
+    var clientId = config.clientId ? config.clientId : "defaultClient";
+    // Enable this if you use Query persisting with Apollo Engine
+    var persisting = config.persisting ? config.persisting : false;
+    // Custom starting link.
+    // If you want to replace the default HttpLink, set `defaultHttpLink` to false
+    var link = config.link ? config.link : null;
+    // If true, add the default HttpLink.
+    // Disable it if you want to replace it with a terminating link using `link` option.
+    var defaultHttpLink = config.defaultHttpLink
+        ? config.defaultHttpLink
+        : true;
+    var httpEndpoint = config.httpEndpoint;
+    // 'apollo-link-http' config
+    // https://www.apollographql.com/docs/link/links/http/#options
+    var httpLinkConfig = config.httpEndpoint
+        ? config.httpEndpoint
+        : {
+        // you can define the 'uri' here or using an env variable when
+        // running quasar commands, for example:
+        // `GRAPHQL_URI=https://prod.example.com/graphql quasar build`
+        // `GRAPHQL_URI=https://dev.example.com/graphql quasar dev`
+        };
+    // 'apollo-cache-inmemory' config
+    // https://www.apollographql.com/docs/react/caching/cache-configuration/#configuring-the-cache
+    var cacheConfig = config.cacheConfig ? config.cacheConfig : {};
+    // Custom Apollo cache implementation (default is apollo-cache-inmemory)
+    var cache = config.cache ? config.cache : new apollo_cache_inmemory_1.InMemoryCache(cacheConfig);
+    // Url to the Websocket API
+    var wsEndpoint = config.wsEndpoint ? config.wsEndpoint : "";
+    // Only use Websocket for all requests (including queries and mutations)
+    var websocketsOnly = config.websocketsOnly ? config.websocketsOnly : false;
+    // apollo-link-state options
+    var clientState = config.clientState ? config.clientState : null;
+    // Local Schema
+    var typeDefs = config.typeDefs ? config.typeDefs : undefined;
+    // Local Resolvers
+    var resolvers = config.resolvers ? config.resolvers : undefined;
+    // additional config for apollo client
+    // https://github.com/apollographql/apollo-client/blob/version-2.6/docs/source/api/apollo-client.mdx#optional-fields
+    var additionalConfig = config.additionalConfig
+        ? config.additionalConfig
+        : {};
+    // Hook called when you should write local state in the cache
+    var onCacheInit = config.onCacheInit ? config.onCacheInit : undefined;
+    // Token used in localstorage
+    var tokenName = config.tokenName ? config.tokenName : "apollo-token";
+    // Function returning Authorization header token
+    var getAuth = config.getAuth ? config.getAuth : defaultGetAuth;
+    // Is currently Server-Side Rendering or not
+    var ssr = false;
+    var apolloClientBeforeCreate = config.apolloClientBeforeCreate
+        ? config.apolloClientBeforeCreate
+        : null;
+    var apolloClientAfterCreate = config.apolloClientAfterCreate
+        ? config.apolloClientAfterCreate
+        : null;
+    var disableHttp = websocketsOnly && wsEndpoint;
     if (!disableHttp) {
-        var httpLink = (0, apollo_upload_client_1.createUploadLink)(__assign({ uri: httpEndpoint }, cfg.httpLinkConfig));
+        var httpLink = (0, apollo_upload_client_1.createUploadLink)(__assign({ uri: httpEndpoint }, httpLinkConfig));
         if (!link) {
             link = httpLink;
         }
-        else if (cfg.defaultHttpLink) {
+        else if (defaultHttpLink) {
             link = (0, apollo_link_1.from)([link, httpLink]);
         }
         // HTTP Auth header injection
-        authLink = (0, apollo_link_context_1.setContext)(function (_, _a) {
+        var authLink = (0, apollo_link_context_1.setContext)(function (_, _a) {
             var headers = _a.headers;
-            var authorization = cfg.getAuth(hbp);
+            // implementation for HBP
+            var authorization = hbpInstance
+                ? getAuth(hbpInstance)
+                : getAuth(tokenName);
             var authorizationHeader = authorization ? { authorization: authorization } : {};
             return {
                 headers: __assign(__assign({}, headers), authorizationHeader),
@@ -75,15 +119,16 @@ function createApolloClient(context, config) {
         // Concat all the http link parts
         link = authLink.concat(link);
     }
+    var wsClient, stateLink;
     // On the server, we don't want WebSockets and Upload links
-    if (!cfg.ssr) {
+    if (!ssr) {
         // If on the client, recover the injected state
         if (typeof window !== "undefined") {
             // eslint-disable-next-line no-underscore-dangle
             var state = window["__APOLLO_STATE__"] || null;
-            if (state && state[cfg.clientId]) {
+            if (state && state[clientId]) {
                 // Restore state
-                cache.restore(state[cfg.clientId]);
+                cache.restore(state[clientId]);
             }
         }
         if (!disableHttp) {
@@ -101,7 +146,9 @@ function createApolloClient(context, config) {
             wsClient = new subscriptions_transport_ws_1.SubscriptionClient(wsEndpoint, {
                 reconnect: true,
                 connectionParams: function () {
-                    var authorization = cfg.getAuth(hbp);
+                    var authorization = hbpInstance
+                        ? getAuth(hbpInstance)
+                        : getAuth(tokenName);
                     // console.log(authorization)
                     return authorization
                         ? { authorization: authorization, headers: { authorization: authorization } }
@@ -125,28 +172,42 @@ function createApolloClient(context, config) {
             }
         }
     }
-    if (cfg.clientState) {
+    if (clientState) {
         console.warn("clientState is deprecated, see https://vue-cli-plugin-apollo.netlify.com/guide/client-state.html");
-        stateLink = (0, apollo_link_state_1.withClientState)(__assign({ cache: cache }, cfg.clientState));
+        stateLink = (0, apollo_link_state_1.withClientState)(__assign({ cache: cache }, clientState));
         link = (0, apollo_link_1.from)([stateLink, link]);
     }
-    var additionalConfig = cfg.additionalConfig, typeDefs = cfg.typeDefs, resolvers = cfg.resolvers;
+    // const { additionalConfig, typeDefs, resolvers } = cfg;
     // object that will be used to instantiate apollo client
     var apolloClientConfigObj = __assign({ link: link, cache: cache, typeDefs: typeDefs, resolvers: resolvers }, additionalConfig);
     // run hook before creating apollo client instance
-    (0, apollo_client_hooks_1.apolloClientBeforeCreate)(__assign({ apolloClientConfigObj: apolloClientConfigObj }, context));
+    if (apolloClientBeforeCreate) {
+        var clientBeforeCreate = function (clientConfigObj, callback) {
+            // the original function handling that lead to some results
+            var result = clientConfigObj;
+            callback(result);
+        };
+        clientBeforeCreate(apolloClientConfigObj, apolloClientBeforeCreate);
+    }
     // create an `apollo client` instance
     var apolloClient = new apollo_client_1.ApolloClient(apolloClientConfigObj);
     // Re-write the client state defaults on cache reset
     if (stateLink) {
         apolloClient.onResetStore(stateLink.writeDefaults);
     }
-    if (cfg.onCacheInit) {
-        cfg.onCacheInit(cache);
-        apolloClient.onResetStore(function () { return cfg.onCacheInit(cache); });
+    if (onCacheInit) {
+        onCacheInit(cache);
+        apolloClient.onResetStore(function () { return onCacheInit(cache); });
     }
     // run hook after creating apollo client instance
-    (0, apollo_client_hooks_1.apolloClientAfterCreate)(__assign({ apolloClient: apolloClient }, context));
+    if (apolloClientAfterCreate) {
+        var clientAfterCreate = function (apolloClient, callback) {
+            // the original function handling that lead to some results
+            var result = apolloClient;
+            callback(result);
+        };
+        clientAfterCreate(apolloClient, apolloClientAfterCreate);
+    }
     // return `apollo client` instance
     return {
         apolloClient: apolloClient,
