@@ -38,8 +38,6 @@ function defaultGetAuth(tokenName) {
 }
 function createApolloClient(config, hbpInstance) {
     if (hbpInstance === void 0) { hbpInstance = null; }
-    console.log("CONFIG", config);
-    console.log("HBP", hbpInstance);
     // Client ID if using multiple Clients
     var clientId = config.clientId ? config.clientId : "defaultClient";
     // Enable this if you use Query persisting with Apollo Engine
@@ -121,7 +119,6 @@ function createApolloClient(config, hbpInstance) {
         // Concat all the http link parts
         link = authLink.concat(link);
     }
-    console.log("link", link);
     var wsClient, stateLink;
     // On the server, we don't want WebSockets and Upload links
     if (!ssr) {
@@ -146,20 +143,17 @@ function createApolloClient(config, hbpInstance) {
         }
         // Web socket
         if (wsEndpoint) {
-            console.log("CRATE WS client", wsEndpoint);
             wsClient = new subscriptions_transport_ws_1.SubscriptionClient(wsEndpoint, {
                 reconnect: true,
                 connectionParams: function () {
                     var authorization = hbpInstance
                         ? getAuth(hbpInstance)
                         : getAuth(tokenName);
-                    // console.log(authorization)
                     return authorization
                         ? { authorization: authorization, headers: { authorization: authorization } }
                         : {};
                 },
             });
-            // console.log(wsClient)
             // Create the subscription websocket link
             var wsLink = new apollo_link_ws_1.WebSocketLink(wsClient);
             if (disableHttp) {
@@ -174,7 +168,6 @@ function createApolloClient(config, hbpInstance) {
                     return (kind === "OperationDefinition" && operation === "subscription");
                 }, wsLink, link);
             }
-            console.log("link after WS", link);
         }
     }
     if (clientState) {
@@ -196,7 +189,6 @@ function createApolloClient(config, hbpInstance) {
     }
     // create an `apollo client` instance
     var apolloClient = new apollo_client_1.ApolloClient(apolloClientConfigObj);
-    console.log("APOLLO CLIENT", apolloClient);
     // Re-write the client state defaults on cache reset
     if (stateLink) {
         apolloClient.onResetStore(stateLink.writeDefaults);

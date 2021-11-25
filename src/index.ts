@@ -24,8 +24,6 @@ function defaultGetAuth(tokenName) {
 }
 
 export function createApolloClient(config: ApolloConfig, hbpInstance = null) {
-  console.log("CONFIG", config)
-  console.log("HBP", hbpInstance)
   // Client ID if using multiple Clients
   const clientId = config.clientId ? config.clientId : "defaultClient";
   // Enable this if you use Query persisting with Apollo Engine
@@ -117,8 +115,6 @@ export function createApolloClient(config: ApolloConfig, hbpInstance = null) {
     link = authLink.concat(link);
   }
 
-  console.log("link", link)
-
   let wsClient, stateLink;
   // On the server, we don't want WebSockets and Upload links
   if (!ssr) {
@@ -146,23 +142,19 @@ export function createApolloClient(config: ApolloConfig, hbpInstance = null) {
     // Web socket
 
     if (wsEndpoint) {
-      console.log("CRATE WS client", wsEndpoint)
-      wsClient = new SubscriptionClient(wsEndpoint, {
+        wsClient = new SubscriptionClient(wsEndpoint, {
         reconnect: true,
         connectionParams: () => {
           const authorization = hbpInstance
             ? getAuth(hbpInstance)
             : getAuth(tokenName);
-          // console.log(authorization)
           return authorization
             ? { authorization, headers: { authorization } }
             : {};
         },
       });
-      // console.log(wsClient)
       // Create the subscription websocket link
       const wsLink = new WebSocketLink(wsClient);
-
       if (disableHttp) {
         link = wsLink;
       } else {
@@ -180,8 +172,7 @@ export function createApolloClient(config: ApolloConfig, hbpInstance = null) {
           link
         );
       }
-      console.log("link after WS", link);
-
+      
     }
   }
 
@@ -219,8 +210,6 @@ export function createApolloClient(config: ApolloConfig, hbpInstance = null) {
 
   // create an `apollo client` instance
   const apolloClient = new ApolloClient(apolloClientConfigObj);
-
-  console.log("APOLLO CLIENT", apolloClient)
 
   // Re-write the client state defaults on cache reset
   if (stateLink) {

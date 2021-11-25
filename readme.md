@@ -2,20 +2,46 @@
 
 Helper for use Apollo (GRAPHQL) in quasar applications.
 
-Using for example in boot file:
+Using for example in QUASAR boot file, how I using with Hasura Backend Plus:
 
 ```
 import Vue from 'vue'
 import VueApollo from 'vue-apollo'
-import { createApolloClient } from 'src/services/apollo/create-apollo-client'
+import { createApolloClient } from '@suplere/apollo-quasar'
 import { hbp } from "src/boot/nhost"
 
 // Install vue-apollo plugin
 Vue.use(VueApollo)
 
+function hbpGetAutentication(hbp) {
+  const token = hbp.auth.getJWTToken()
+  return token ? `Bearer ${token}` : ''
+}
+
 export default ({ app, router, store, urlPath, redirect }) => {
   // create an 'apollo client' instance
-  const { apolloClient, wsClient } = createApolloClient({ app, router, store, urlPath, redirect, hbp })
+  function testCallbackBefore(clientConfigObj) {
+    console.log("--------BEFORE CREATE HOOK---------")
+    console.log("clientConfigObj",clientConfigObj)
+    console.log("STORE", store)
+  }
+
+  function testCallBackAfter(apolloClient) {
+    console.log("--------AFTER CREATE HOOK---------")
+    console.log("apolloClient", apolloClient)
+    console.log("ROUTER", router)
+  }
+
+  const httpEndpoint = process.env.GRAPHQL_URI
+  const wsEndpoint = process.env.GRAPHQL_WS_URI
+  
+  const { apolloClient, wsClient } = createApolloClient({
+    httpEndpoint,
+    wsEndpoint,
+    getAuth: hbpGetAutentication,
+    apolloClientBeforeCreate: testCallbackBefore,
+    apolloClientAfterCreate: testCallBackAfter
+  }, hbp)
 
   apolloClient.wsClient = wsClient
 
