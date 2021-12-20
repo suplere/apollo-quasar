@@ -1,6 +1,6 @@
 {
   "name": "@suplere/apollo-quasar",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Service modul for QUASAR and GRAPHQL application",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

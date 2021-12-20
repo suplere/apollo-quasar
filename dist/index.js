@@ -23,7 +23,6 @@ var subscriptions_transport_ws_1 = require("subscriptions-transport-ws");
 var message_types_1 = __importDefault(require("subscriptions-transport-ws/dist/message-types"));
 var apollo_link_ws_1 = require("apollo-link-ws");
 var apollo_utilities_1 = require("apollo-utilities");
-var apollo_link_persisted_queries_1 = require("apollo-link-persisted-queries");
 var apollo_link_context_1 = require("apollo-link-context");
 var apollo_link_state_1 = require("apollo-link-state");
 function defaultGetAuth(tokenName) {
@@ -131,16 +130,16 @@ function createApolloClient(config, hbpInstance) {
                 cache.restore(state[clientId]);
             }
         }
-        if (!disableHttp) {
-            var persistingOpts = {};
-            if (typeof persisting === "object" && persisting != null) {
-                persistingOpts = persisting;
-                persisting = true;
-            }
-            if (persisting === true) {
-                link = (0, apollo_link_persisted_queries_1.createPersistedQueryLink)(persistingOpts).concat(link);
-            }
-        }
+        // if (!disableHttp) {
+        //   let persistingOpts = {};
+        //   if (typeof persisting === "object" && persisting != null) {
+        //     persistingOpts = persisting;
+        //     persisting = true;
+        //   }
+        //   if (persisting === true) {
+        //     link = createPersistedQueryLink(persistingOpts).concat(link);
+        //   }
+        // }
         // Web socket
         if (wsEndpoint) {
             wsClient = new subscriptions_transport_ws_1.SubscriptionClient(wsEndpoint, {

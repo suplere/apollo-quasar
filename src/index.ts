@@ -128,16 +128,16 @@ export function createApolloClient(config: ApolloConfig, hbpInstance = null) {
       }
     }
 
-    if (!disableHttp) {
-      let persistingOpts = {};
-      if (typeof persisting === "object" && persisting != null) {
-        persistingOpts = persisting;
-        persisting = true;
-      }
-      if (persisting === true) {
-        link = createPersistedQueryLink(persistingOpts).concat(link);
-      }
-    }
+    // if (!disableHttp) {
+    //   let persistingOpts = {};
+    //   if (typeof persisting === "object" && persisting != null) {
+    //     persistingOpts = persisting;
+    //     persisting = true;
+    //   }
+    //   if (persisting === true) {
+    //     link = createPersistedQueryLink(persistingOpts).concat(link);
+    //   }
+    // }
 
     // Web socket
 
